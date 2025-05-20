@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>AI Robo Assistant</title>
+  <!-- <link rel="stylesheet" href="style.css" /> -->
+   <style>
+
+
+
+body {
+  background: #121212;
+  color: #fff;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  height: 100vh;
+  align-items: center;
+}
+
+.container {
+  background: #1e1e1e;
+  width: 450px;
+  max-width: 90vw;
+  border-radius: 10px;
+  box-shadow: 0 0 15px #00bcd4;
+  display: flex;
+  flex-direction: column;
+  height: 600px;
+  padding: 20px;
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #00bcd4;
+}
+
+#chat-window {
+  flex: 1;
+  background: #292929;
+  border-radius: 8px;
+  padding: 15px;
+  overflow-y: auto;
+  margin-bottom: 15px;
+  box-shadow: inset 0 0 10px #00000080;
+}
+
+.msg {
+  margin-bottom: 15px;
+  max-width: 70%;
+  padding: 10px 15px;
+  border-radius: 20px;
+  font-size: 1rem;
+  line-height: 1.4;
+  word-wrap: break-word;
+}
+
+.user-msg {
+  background: #00bcd4;
+  color: #fff;
+  margin-left: auto;
+  border-bottom-right-radius: 0;
+}
+
+.bot-msg {
+  background: #444;
+  color: #ddd;
+  margin-right: auto;
+  border-bottom-left-radius: 0;
+}
+
+.input-area {
+  display: flex;
+  gap: 10px;
+}
+
+input[type="text"] {
+  flex: 1;
+  border-radius: 20px;
+  border: none;
+  padding: 12px 20px;
+  font-size: 1rem;
+  outline: none;
+}
+
+button {
+  background: #00bcd4;
+  border: none;
+  border-radius: 20px;
+  color: white;
+  font-weight: bold;
+  font-size: 1.2rem;
+  padding: 12px 20px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+button:hover {
+  background: #0097a7;
+}
+
+
+
+
+
+
+
+
+
+   </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🤖 AI Robo Assistant</h1>
+    <div id="chat-window"></div>
+
+    <div class="input-area">
+      <input id="messageInput" type="text" placeholder="अपना सवाल यहाँ लिखें..." autocomplete="off" />
+      <button id="sendBtn">➡️</button>
+    </div>
+  </div>
+
+  <script>
+
+
+
+const chatWindow = document.getElementById('chat-window');
+const messageInput = document.getElementById('messageInput');
+const sendBtn = document.getElementById('sendBtn');
+
+function appendMessage(text, className) {
+  const div = document.createElement('div');
+  div.classList.add('msg', className);
+  div.textContent = text;
+  chatWindow.appendChild(div);
+  chatWindow.scrollTop = chatWindow.scrollHeight;
+}
+
+function speak(text) {
+  if (!window.speechSynthesis) return;
+  const utterance = new SpeechSynthesisUtterance(text);
+  window.speechSynthesis.speak(utterance);
+}
+
+async function sendMessage() {
+  const message = messageInput.value.trim();
+  if (!message) return;
+
+  appendMessage(message, 'user-msg');
+  messageInput.value = '';
+
+  try {
+    const response = await fetch('/api/message', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message }),
+    });
+    const data = await response.json();
+
+    appendMessage(data.reply, 'bot-msg');
+    speak(data.reply);
+  } catch (error) {
+    appendMessage("Error: Unable to get response.", 'bot-msg');
+  }
+}
+
+sendBtn.addEventListener('click', sendMessage);
+
+messageInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    sendMessage();
+  }
+});
+
+
+  </script>
+</body>
+</html>
